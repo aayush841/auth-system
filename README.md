@@ -75,15 +75,3 @@ npm run dev
 
 ---
 
-## 📦 Project Structure
-
-```text
-Auth-System/
-    ├── src/
-    │   ├── config/      # Database and Passport OAuth setups
-    │   ├── controllers/ # Auth and Session controllers
-    │   ├── models/      # Mongoose User and Session schemas
-    │   ├── services/    # email.service.js (Nodemailer setup)
-    │   └── server.js    # Express entry point
-
-```
