@@ -33,7 +33,7 @@ Ensure you have the following installed locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/Auth-System.git
+git clone https://github.com/aayush841/auth-system.git
 cd Auth-System
 ```
 
