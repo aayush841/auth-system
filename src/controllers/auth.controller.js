@@ -1,8 +1,10 @@
 // src/controllers/auth.controller.js
 import User from '../models/user.model.js';
 import Session from '../models/session.model.js';
+import useragent from 'useragent';
 import jwt from 'jsonwebtoken';
 import { generateAccessToken, generateRefreshToken } from '../services/token.service.js';
+import { sendLoginNotification } from '../services/email.service.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -36,6 +38,12 @@ export const register = async (req, res, next) => {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
+
+    const agent = useragent.parse(req.headers['user-agent']);
+    const device = `${agent.toAgent()} on ${agent.os.toString()}`;
+    const ipAddress = req.ip || 'unknown';
+    //not using await as email is to be sent in backgorund
+    sendLoginNotification(user.email,device,ipAddress);
 
     return res.status(201).json({
       success: true,
@@ -72,6 +80,7 @@ export const login = async (req, res, next) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
+
     
     await Session.create({
         userId: user._id,
@@ -86,6 +95,12 @@ export const login = async (req, res, next) => {
       sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
+    
+    const agent = useragent.parse(req.headers['user-agent']);
+    const device = `${agent.toAgent()} on ${agent.os.toString()}`;
+    const ipAddress = req.ip || 'unknown';
+    //not using await as email is to be sent in backgorund
+    sendLoginNotification(user.email,device,ipAddress);
 
     return res.status(200).json({
       success: true,
@@ -99,6 +114,41 @@ export const login = async (req, res, next) => {
 
   } catch (error) {
     next(error);
+  }
+};
+
+export const googleAuthCallback = async (req,res) => {
+  try{
+    const user = req.user;
+    if(!user){
+      return res.redirect('http://localhost:5173/login?error=auth_failed');
+    }
+    const refreshToken = generateRefreshToken(user._id);
+
+    await Session.create({
+        userId: user._id,
+        refreshToken: refreshToken,
+        userAgent: req.headers['user-agent'] || 'unknown',
+        ipAddress: req.ip || 'unknown',
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
+        });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    const agent = useragent.parse(req.headers['user-agent']);
+    const device = `${agent.toAgent()} on ${agent.os.toString()}`;
+    const ipAddress = req.ip || 'unknown';
+    sendLoginNotification(user.email,device,ipAddress);
+
+    res.redirect('http://localhost:5173/dashboard');
+  }catch (error){
+      console.error("OAuth Callback Error:", error);
+      res.redirect('http://localhost:5173/login?error=server_error');
   }
 };
 
@@ -123,7 +173,7 @@ export const logout = async (req, res) => {
     });
 
     // 4. Always return a success status
-    return res.status(200).json({ message: 'Logged out successfully on server' });
+    return res.status(200).json({ message: 'Logged out successfully' });
 
   } catch (error) {
     return res.status(500).json({ message: 'Server error during logout' });

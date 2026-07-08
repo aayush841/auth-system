@@ -1,3 +1,4 @@
+import "./config/env.js";
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
@@ -9,8 +10,11 @@ import authRoutes from './routes/auth.routes.js'
 import adminRoutes from './routes/admin.routes.js'
 import productRoutes from './routes/product.routes.js'
 
-dotenv.config();
+
+//dotenv.config();
 connectDB();
+
+import "./config/passport.js";
 
 const app = express();
 
