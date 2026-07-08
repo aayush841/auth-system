@@ -42,7 +42,8 @@ Create a `.env` file in the root of your backend directory and append your speci
 
 ```env
 # Server Configuration
-PORT=5000
+PORT = 8080
+CLIENT_URL = http://localhost:3000
 NODE_ENV=development
 
 # Database Configuration
