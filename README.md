@@ -49,6 +49,10 @@ NODE_ENV=development
 # Database Configuration
 MONGO_URI=mongodb://localhost:2017/auth_system
 
+#JWT Secret
+ACCESS_TOKEN_SECRET=secret_access_key_12345!
+REFRESH_TOKEN_SECRET=secret_refresh_key_67890!
+
 # Google OAuth Credentials
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret
